@@ -80,10 +80,15 @@ class TestMiniCobolCompiler(unittest.TestCase):
 
             combined_output = result.stdout + result.stderr
 
-            self.assertTrue(
-                result.returncode != 0
-                or "TOTAL" in combined_output.upper(),
-                msg="Expected an error for undeclared variable TOTAL."
+            self.assertNotEqual(
+                result.returncode,
+                0,
+                msg="Compiler should reject undeclared variable TOTAL."
+            )
+
+            self.assertIn(
+                "UNDECLARED VARIABLE 'TOTAL'",
+                combined_output.upper()
             )
 
     def test_numeric_value_exceeds_pic_size(self):
@@ -98,12 +103,15 @@ class TestMiniCobolCompiler(unittest.TestCase):
 
             combined_output = result.stdout + result.stderr
 
-            self.assertTrue(
-                result.returncode != 0
-                or "exceed" in combined_output.lower()
-                or "too large" in combined_output.lower()
-                or "overflow" in combined_output.lower(),
-                msg="Expected an error for value 1234 in PIC 9(3)."
+            self.assertNotEqual(
+                result.returncode,
+                0,
+                msg="Compiler should reject 1234 in PIC 9(3)."
+            )
+
+            self.assertIn(
+                "VALUE EXCEEDS PIC SIZE",
+                combined_output.upper()
             )
 
     def test_missing_stop_run(self):
@@ -115,10 +123,15 @@ class TestMiniCobolCompiler(unittest.TestCase):
 
             combined_output = result.stdout + result.stderr
 
-            self.assertTrue(
-                result.returncode != 0
-                or "stop run" in combined_output.lower(),
-                msg="Expected an error when STOP RUN is missing."
+            self.assertNotEqual(
+                result.returncode,
+                0,
+                msg="Compiler should reject a program missing STOP RUN."
+            )
+
+            self.assertIn(
+                "PROGRAM MUST END WITH STOP RUN",
+                combined_output.upper()
             )
 
 
