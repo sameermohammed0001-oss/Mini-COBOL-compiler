@@ -134,6 +134,143 @@ class TestMiniCobolCompiler(unittest.TestCase):
                 combined_output.upper()
             )
 
+    def test_subtract_operation(self):
+        program = VALID_PROGRAM.replace(
+            "ADD NUM1 TO NUM2 GIVING RESULT.",
+            "SUBTRACT NUM1 FROM NUM2."
+        ).replace(
+            'DISPLAY "THE FINAL RESULT IS: " RESULT.',
+            'DISPLAY "THE FINAL RESULT IS: " NUM2.'
+        )
+
+        with tempfile.TemporaryDirectory() as temp:
+            folder = Path(temp)
+            result = self.compile_program(program, folder)
+
+            self.assertEqual(
+                result.returncode, 0,
+                msg=result.stdout + result.stderr
+            )
+
+            execution = subprocess.run(
+                [sys.executable, str(folder / "output.py")],
+                capture_output=True,
+                text=True
+            )
+
+            self.assertEqual(
+                execution.returncode, 0,
+                msg=execution.stdout + execution.stderr
+            )
+            self.assertIn("THE FINAL RESULT IS: 25", execution.stdout)
+
+    def test_multiply_operation(self):
+        program = VALID_PROGRAM.replace(
+            "MOVE 25 TO NUM1.",
+            "MOVE 10 TO NUM1."
+        ).replace(
+            "MOVE 50 TO NUM2.",
+            "MOVE 5 TO NUM2."
+        ).replace(
+            "ADD NUM1 TO NUM2 GIVING RESULT.",
+            "MULTIPLY NUM1 BY NUM2."
+        ).replace(
+            'DISPLAY "THE FINAL RESULT IS: " RESULT.',
+            'DISPLAY "THE FINAL RESULT IS: " NUM2.'
+        )
+
+        with tempfile.TemporaryDirectory() as temp:
+            folder = Path(temp)
+            result = self.compile_program(program, folder)
+
+            self.assertEqual(
+                result.returncode, 0,
+                msg=result.stdout + result.stderr
+            )
+
+            execution = subprocess.run(
+                [sys.executable, str(folder / "output.py")],
+                capture_output=True,
+                text=True
+            )
+
+            self.assertEqual(
+                execution.returncode, 0,
+                msg=execution.stdout + execution.stderr
+            )
+            self.assertIn("THE FINAL RESULT IS: 50", execution.stdout)
+
+    def test_divide_operation(self):
+        program = VALID_PROGRAM.replace(
+            "MOVE 25 TO NUM1.",
+            "MOVE 5 TO NUM1."
+        ).replace(
+            "MOVE 50 TO NUM2.",
+            "MOVE 100 TO NUM2."
+        ).replace(
+            "ADD NUM1 TO NUM2 GIVING RESULT.",
+            "DIVIDE NUM1 INTO NUM2."
+        ).replace(
+            'DISPLAY "THE FINAL RESULT IS: " RESULT.',
+            'DISPLAY "THE FINAL RESULT IS: " NUM2.'
+        )
+
+        with tempfile.TemporaryDirectory() as temp:
+            folder = Path(temp)
+            result = self.compile_program(program, folder)
+
+            self.assertEqual(
+                result.returncode, 0,
+                msg=result.stdout + result.stderr
+            )
+
+            execution = subprocess.run(
+                [sys.executable, str(folder / "output.py")],
+                capture_output=True,
+                text=True
+            )
+
+            self.assertEqual(
+                execution.returncode, 0,
+                msg=execution.stdout + execution.stderr
+            )
+            self.assertIn("THE FINAL RESULT IS: 20", execution.stdout)
+
+    def test_divide_by_zero(self):
+        program = VALID_PROGRAM.replace(
+            "MOVE 25 TO NUM1.",
+            "MOVE 0 TO NUM1."
+        ).replace(
+            "DIVIDE NUM1 INTO NUM2.",
+            "DIVIDE NUM1 INTO NUM2."
+        ).replace(
+            "ADD NUM1 TO NUM2 GIVING RESULT.",
+            "DIVIDE NUM1 INTO NUM2."
+        )
+
+        with tempfile.TemporaryDirectory() as temp:
+            folder = Path(temp)
+            result = self.compile_program(program, folder)
+
+            self.assertEqual(
+                result.returncode, 0,
+                msg=result.stdout + result.stderr
+            )
+
+            execution = subprocess.run(
+                [sys.executable, str(folder / "output.py")],
+                capture_output=True,
+                text=True
+            )
+
+            self.assertNotEqual(
+                execution.returncode, 0,
+                msg="Expected division by zero to raise an error."
+            )
+            self.assertIn(
+                "Division by zero",
+                execution.stderr
+            )
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
